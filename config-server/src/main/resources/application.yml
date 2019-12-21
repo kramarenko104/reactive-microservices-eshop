@@ -1,0 +1,29 @@
+server:
+  port: 8888
+
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          #     uri: https://github.com/kramarenko104/spring-boot-microservices-eshop/configs
+          uri: https://github.com/juli127/ConfigData.git
+      enabled:  false
+
+logging:
+  level:
+    comnetflix.discovery: 'OFF'
+    org.springframework.cloud: 'DEBUG'
+
+# For File System:
+# spring.profiles.active=native
+# spring.cloud.config.server.native.searchLocations=classpath:/shared

@@ -1,0 +1,19 @@
+server:
+  port: 8093
+
+spring:
+  application:
+    name: user-service
+#  cloud:
+#    config:
+#      enabled:  true
+#      uri: http://localhost:8888
+#      fail-fast: true
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/eshopdb
+      database: eshopdb
+#      authentication-database: admin
+      username: root
+      password: root
