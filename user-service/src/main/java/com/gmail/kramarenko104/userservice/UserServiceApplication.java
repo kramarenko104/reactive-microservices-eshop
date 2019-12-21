@@ -15,6 +15,10 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +26,8 @@ import java.util.Set;
 @EnableEurekaClient
 @EnableSwagger2
 public class UserServiceApplication  {
+
+    private final static String SALT = "34Ru9k";
 
     public static void main(String[] args) {
         SpringApplication.run(UserServiceApplication.class, args);
@@ -40,7 +46,7 @@ public class UserServiceApplication  {
                     .name("Alex")
                     .user_id(0)
                     .login("admin")
-                    .password("admin")
+                    .password(hashString("admin"))
                     .roles(rolesAU)
                     .address("-")
                     .comment("no comments")
@@ -49,7 +55,7 @@ public class UserServiceApplication  {
                      .name("Alex")
                      .user_id(1)
                      .login("alex@gmail.com")
-                     .password("1111111")
+                     .password(hashString("1111111"))
                      .roles(rolesU)
                      .address("alex address")
                      .comment("don't call before delivery")
@@ -58,7 +64,7 @@ public class UserServiceApplication  {
                     .name("Julia")
                     .user_id(2)
                     .login("juli@gmail.com")
-                    .password("12345678")
+                    .password(hashString("12345678"))
                     .roles(rolesU)
                     .address("julia address")
                     .comment("no comments")
@@ -67,6 +73,17 @@ public class UserServiceApplication  {
                 .thenMany(userRepo.findAll())
                 .subscribe(System.out::println);
         };
+    }
+
+    private String hashString(String hash) {
+        MessageDigest md5 = null;
+        try {
+            md5 = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        md5.update(StandardCharsets.UTF_8.encode(hash + SALT));
+        return String.format("%032x", new BigInteger(md5.digest()));
     }
 
     @Bean

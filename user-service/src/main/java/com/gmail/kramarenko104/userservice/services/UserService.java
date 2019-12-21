@@ -18,6 +18,4 @@ public interface UserService {
 
     Flux<User> findAllUsers();
 
-    String hashString(String hash);
-
 }
