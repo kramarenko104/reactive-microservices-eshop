@@ -31,7 +31,7 @@ public class UserRestController {
     }
 
     @GetMapping("/{userId}")
-    public Optional<ResponseEntity<User>> getUser(@PathVariable("userId") long userId) {
+    public Optional<ResponseEntity<User>> getUser(@PathVariable("userId") String userId) {
         return userService.getUser(userId)
                 .map(foundUser -> ResponseEntity.ok(foundUser))
                 .defaultIfEmpty(ResponseEntity.notFound().build())
@@ -39,7 +39,7 @@ public class UserRestController {
     }
 
     @GetMapping("/api/{userId}")
-    public Mono<ResponseEntity<User>> getUserAPI(@PathVariable("userId") long userId) {
+    public Mono<ResponseEntity<User>> getUserAPI(@PathVariable("userId") String userId) {
         return userService.getUser(userId)
                 .map(foundUser -> ResponseEntity.ok(foundUser))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -56,7 +56,7 @@ public class UserRestController {
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable("userId") long userId) {
+    public void deleteUser(@PathVariable("userId") String userId) {
          userService.deleteUserById(userId);
     }
 }

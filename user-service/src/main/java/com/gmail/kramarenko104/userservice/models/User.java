@@ -18,7 +18,7 @@ import java.util.Set;
 public class User implements Serializable {
 
     @Id
-    private long user_id;
+    private String id;
     private String login;
     private String password;
     private String name;
@@ -31,7 +31,7 @@ public class User implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-                "userId:" + user_id + ", " +
+                "userId:" + id + ", " +
                 "login:'" + login + "', name:'" + name + "', roles: " + roles + "}";
     }
 }

@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> getUser(long id) {
+    public Mono<User> getUser(String id) {
         return userRepo.findById(id);
     }
 
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUserById(long id) {
+    public void deleteUserById(String id) {
          userRepo.deleteById(id);
     }
 

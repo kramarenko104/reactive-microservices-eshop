@@ -8,7 +8,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.core.ReactiveMongoOperations;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -25,7 +27,7 @@ import java.util.Set;
 @SpringBootApplication
 @EnableEurekaClient
 @EnableSwagger2
-public class UserServiceApplication  {
+public class UserServiceApplication {
 
     private final static String SALT = "34Ru9k";
 
@@ -34,44 +36,55 @@ public class UserServiceApplication  {
     }
 
     @Bean
-    CommandLineRunner run(UserRepo userRepo) {
+    CommandLineRunner run(ReactiveMongoOperations operations, UserRepo userRepo) {
+        // prepare Publisher
         Set<Role> rolesAU = new HashSet<>();
         rolesAU.add(new Role("ROLE_ADMIN"));
         rolesAU.add(new Role("ROLE_USER"));
         Set<Role> rolesU = new HashSet<>();
         rolesU.add(new Role("ROLE_USER"));
 
-        return args -> { Flux.just(
+        Flux<User> userFlux = Flux.just(
                 new User().toBuilder()
-                    .name("Alex")
-                    .user_id(0)
-                    .login("admin")
-                    .password(hashString("admin"))
-                    .roles(rolesAU)
-                    .address("-")
-                    .comment("no comments")
-                    .build(),
+                        .name("Alex")
+                        .id(null)
+                        .login("admin")
+                        .password(hashString("admin"))
+                        .roles(rolesAU)
+                        .address("home, sweet home")
+                        .comment("no comments")
+                        .build(),
                 new User().toBuilder()
-                     .name("Alex")
-                     .user_id(1)
-                     .login("alex@gmail.com")
-                     .password(hashString("1111111"))
-                     .roles(rolesU)
-                     .address("alex address")
-                     .comment("don't call before delivery")
-                     .build(),
+                        .name("Alex")
+                        .id(null)
+                        .login("alex@gmail.com")
+                        .password(hashString("1111111"))
+                        .roles(rolesU)
+                        .address("alex address")
+                        .comment("don't call before delivery")
+                        .build(),
                 new User().toBuilder()
-                    .name("Julia")
-                    .user_id(2)
-                    .login("juli@gmail.com")
-                    .password(hashString("12345678"))
-                    .roles(rolesU)
-                    .address("julia address")
-                    .comment("no comments")
-                    .build())
-                .flatMap(userRepo::save)
-                .thenMany(userRepo.findAll())
-                .subscribe(System.out::println);
+                        .name("Julia")
+                        .id(null)
+                        .login("juli@gmail.com")
+                        .password(hashString("12345678"))
+                        .roles(rolesU)
+                        .address("julia address")
+                        .comment("no comments")
+                        .build());
+
+        // drop old data and load the new ones
+        operations.collectionExists(User.class)
+                .flatMap(exists -> exists ? operations.dropCollection(User.class) : Mono.just(exists))
+                .thenMany(e -> operations.createCollection(User.class))
+                .thenMany(userFlux)
+                .subscribe();
+
+        return args -> {
+            userFlux
+                    .flatMap(userRepo::save)
+                    .thenMany(userRepo.findAll())
+                    .subscribe(System.out::println);
         };
     }
 
