@@ -3,11 +3,11 @@ package com.gmail.kramarenko104.userservice.controllers;
 import com.gmail.kramarenko104.userservice.models.User;
 import com.gmail.kramarenko104.userservice.services.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -20,43 +20,54 @@ public class UserRestController {
         this.userService = userService;
     }
 
-    @GetMapping()
+    @GetMapping
     public Flux<User> getAllUsers() {
         return userService.findAllUsers();
     }
 
-    @PostMapping()
-        public Mono<User> createUser(@RequestParam("user") User user) {
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<User> createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 
     @GetMapping("/{userId}")
-    public Optional<ResponseEntity<User>> getUser(@PathVariable("userId") String userId) {
-        return userService.getUser(userId)
-                .map(foundUser -> ResponseEntity.ok(foundUser))
-                .defaultIfEmpty(ResponseEntity.notFound().build())
-                .blockOptional();
-    }
-
-    @GetMapping("/api/{userId}")
-    public Mono<ResponseEntity<User>> getUserAPI(@PathVariable("userId") String userId) {
+    public Mono<ResponseEntity<User>> getUser(@PathVariable("userId") String userId) {
         return userService.getUser(userId)
                 .map(foundUser -> ResponseEntity.ok(foundUser))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(params = {"login"})
-    public Flux<User> getUserByLogin(@RequestParam("login") String login) {
-        return userService.getUserByLogin(login);
+    @GetMapping("/api/{userId}")
+    public Mono<User> getUserAPI(@PathVariable("userId") String userId) {
+        return userService.getUser(userId);
     }
 
-    @PutMapping
-    public Mono<User> updateUser(@RequestParam("user") User user) {
-        return userService.updateUser(user);
+    @GetMapping(params = {"login"})
+    public Mono<ResponseEntity<User>> getUserByLogin(@RequestBody String login) {
+        return userService.getUserByLogin(login)
+                .map(foundUser -> ResponseEntity.ok(foundUser))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{userId}")
+    public Mono<ResponseEntity<User>> updateUser(@PathVariable("userId") String userId,
+                                                 @RequestBody User user) {
+        return userService.getUser(userId)
+                .flatMap(foundUser ->
+                        userService.updateUser(user)
+                                .then(Mono.just(ResponseEntity.ok(user)))
+                )
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable("userId") String userId) {
-         userService.deleteUserById(userId);
+    public Mono<ResponseEntity<Void>> deleteUser(@PathVariable("userId") String userId) {
+         return userService.getUser(userId)
+                 .flatMap(foundUser ->
+                    userService.deleteUserById(userId)
+                         .then(Mono.just(ResponseEntity.ok().<Void>build()))
+                 )
+                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }

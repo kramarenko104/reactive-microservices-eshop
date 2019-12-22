@@ -10,11 +10,11 @@ public interface UserService {
 
     Mono<User> getUser(String id);
 
-    Flux<User> getUserByLogin(String login);
+    Mono<User> getUserByLogin(String login);
 
     Mono<User> updateUser(User user);
 
-    void deleteUserById(String id);
+    Mono<Void> deleteUserById(String id);
 
     Flux<User> findAllUsers();
 

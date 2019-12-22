@@ -35,8 +35,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Flux<User> getUserByLogin(String login) {
-        return userRepo.findAll();
+    public Mono<User> getUserByLogin(String login) {
+        return userRepo.getUserByLogin(login);
     }
 
     @Override
@@ -45,8 +45,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUserById(String id) {
-         userRepo.deleteById(id);
+    public Mono<Void> deleteUserById(String id) {
+         return userRepo.deleteById(id);
     }
 
     @Override
